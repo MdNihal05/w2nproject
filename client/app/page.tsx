@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 
-const API_URL = "https://w2nproject.onrender.com/api/bills";
+const API_URL = "http://localhost:5000/api/bills";
 
 type Bill = {
   _id: string;
@@ -22,7 +22,7 @@ type FormData = {
   files: File[];
 };
 
-function App() {
+const Page = () => {
   const [bills, setBills] = useState<Bill[]>([]);
   const [formData, setFormData] = useState<FormData>({
     name: "",
@@ -32,6 +32,8 @@ function App() {
     date: "",
     files: [],
   });
+  const [analysis, setAnalysis] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     fetchBills();
@@ -71,6 +73,7 @@ function App() {
     form.append("amount", formData.amount);
     form.append("note", formData.note);
     form.append("date", formData.date);
+
     formData.files.forEach((file) => form.append("files", file));
     try {
       const response = await fetch(`${API_URL}/add`, {
@@ -88,7 +91,6 @@ function App() {
         date: "",
         files: [],
       });
-      formData.files = [];
       fetchBills();
     } catch (error) {
       console.error("Error adding bill:", error);
@@ -107,14 +109,35 @@ function App() {
     }
   };
 
+  const handleDescribe = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    setAnalysis(null);
+
+    try {
+      const response = await fetch(`${API_URL}/describe`);
+      if (!response.ok) throw new Error("Failed to get bill analysis");
+      const data = await response.json();
+      setAnalysis(data.message);
+    } catch (error) {
+      console.error("Error fetching bill analysis:", error);
+      setAnalysis("Failed to fetch bill analysis.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen min-w-screen p-5 flex flex-col gap-8 items-center justify-center text-black rounded-md drop-shadow-xl shadow-lg rounded-lg">
-      <h1 className="m-3 bg-amber-200 shadow-md text-2xl p-2 rounded-md">
-        Bills Manager
-      </h1>
+      <div className="flex items-center m-3">
+        <img src="/way2news.png" alt="Way2News Logo" className="h-10 mr-2" />
+        <h1 className="bg-amber-200 shadow-md text-2xl p-2 rounded-md">
+          Bills Manager - track your bills
+        </h1>
+      </div>
       <form
         onSubmit={handleSubmit}
-        className="bg-gray-200 flex flex-col items-center justify-center"
+        className="bg-gray-300 flex flex-col items-center justify-center"
       >
         <div className="grid grid-cols-1 md:grid-cols-2 m-4 gap-6 rounded-lg p-3">
           <div>
@@ -129,7 +152,7 @@ function App() {
               value={formData.name}
               onChange={handleInputChange}
               required
-              className="p-2"
+              className="p-2 rounded-md"
             />
           </div>
           <div>
@@ -144,7 +167,7 @@ function App() {
               value={formData.category}
               onChange={handleInputChange}
               required
-              className="p-2"
+              className="p-2 rounded-md"
             />
           </div>
           <div>
@@ -159,7 +182,7 @@ function App() {
               value={formData.amount}
               onChange={handleInputChange}
               required
-              className="p-2"
+              className="p-2 rounded-md"
             />
           </div>
           <div>
@@ -172,7 +195,7 @@ function App() {
               placeholder="Note"
               value={formData.note}
               onChange={handleInputChange}
-              className="p-2"
+              className="p-2 rounded-md"
             />
           </div>
           <div>
@@ -186,7 +209,7 @@ function App() {
               value={formData.date}
               onChange={handleInputChange}
               required
-              className="p-2"
+              className="p-2 rounded-md"
             />
           </div>
           <div>
@@ -205,7 +228,7 @@ function App() {
         </div>
         <button
           type="submit"
-          className="bg-blue-600 text-white  shadow-md p-2 m-2 rounded-lg"
+          className="bg-blue-600 text-white shadow-md p-2 m-2 rounded-lg"
         >
           Add Bill
         </button>
@@ -219,40 +242,22 @@ function App() {
           No bills found.
         </p>
       ) : (
-        <div className="w-auto grid grid-cols-1 md:grid-cols-2  gap-2  ">
+        <div className="w-auto grid grid-cols-1 md:grid-cols-2 gap-2">
           {bills.map((bill) => (
             <div
               key={bill._id}
-              className="bg-slate-300 p-3 rounded-sm shadow-md text-black"
+              className="bg-slate-300 min-w-64 p-3 rounded-sm shadow-md"
             >
-              <h3 className="bg-blue-300 p-1 font-bold rounded-sm">
+              <h3 className="bg-blue-300 p-1 font-bold rounded-sm text-center">
                 {bill.name}
               </h3>
               <p>Category: {bill.category}</p>
               <p>Amount: {bill.amount}</p>
               <p>Note: {bill.note}</p>
               <p>Date: {new Date(bill.date).toLocaleDateString()}</p>
-              {bill.files.length > 0 && (
-                <div>
-                  <strong>Files:</strong>
-                  <ul>
-                    {bill.files.map((fileUrl, index) => (
-                      <li key={index} className="text-blue-700 p-1 m-1">
-                        <a
-                          href={fileUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          View File
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
               <button
                 onClick={() => handleDelete(bill._id)}
-                className="bg-red-400 text-black shadow-md p-2 m-2 rounded-lg"
+                className="bg-red-400 p-2 m-2 rounded-lg"
               >
                 Delete
               </button>
@@ -260,8 +265,18 @@ function App() {
           ))}
         </div>
       )}
+
+      <button
+        onClick={handleDescribe}
+        className="bg-green-600 text-white p-2 m-2 rounded-lg"
+      >
+        Describe Bills
+      </button>
+
+      {loading && <p>Loading analysis...</p>}
+      {analysis && <pre className="bg-gray-200 p-3 rounded-md">{analysis}</pre>}
     </div>
   );
-}
+};
 
-export default App;
+export default Page;

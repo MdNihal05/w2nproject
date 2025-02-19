@@ -1,4 +1,5 @@
 const Bill = require("../models/Bill");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 const cloudinary = require("../utils/cloudinary");
 const streamifier = require("streamifier");
 
@@ -80,8 +81,53 @@ const deleteBill = async (req, res) => {
   }
 };
 
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+const describeBills = async (req, res) => {
+  try {
+    const bills = await Bill.find();
+    if (!bills.length) {
+      return res.json({ message: "No bills found." });
+    }
+
+    const formattedBills = bills.map((bill) => ({
+      category: bill.category,
+      amount: bill.amount,
+      date: bill.date,
+      name: bill.name,
+    }));
+
+    const prompt = `
+I have a list of bills, and I want a detailed analysis. The list of bills is:
+
+${JSON.stringify(formattedBills, null, 2)}
+
+Please analyze and provide:
+- Total amount spent
+- Average bill amount
+- Highest and lowest bill
+- Spending breakdown by category
+- Monthly spending summary
+- Any insights on spending patterns
+
+Format the response in Markdown.
+    `;
+
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const result = await model.generateContent(prompt);
+    const responseText = result.response.text();
+
+    res.setHeader("Content-Type", "text/markdown");
+    res.json({ message: responseText });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   addBill,
   getBills,
   deleteBill,
+  describeBills
 };
