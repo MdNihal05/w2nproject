@@ -8,7 +8,7 @@ const app = express();
 connectDb();
 
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: 'https://w2nproject.vercel.app',
   methods: ['GET', 'POST', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
