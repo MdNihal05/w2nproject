@@ -8,6 +8,7 @@ const billSchema = mongoose.Schema(
     amount: { type: Number, required: true },
     date: { type: Date, required: true },
     files: [{ type: String }],
+    filePublicIds: [{ type: String }]
   },
   { timestamps: true }
 );

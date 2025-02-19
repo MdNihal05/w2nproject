@@ -72,7 +72,6 @@ function App() {
     form.append("note", formData.note);
     form.append("date", formData.date);
     formData.files.forEach((file) => form.append("files", file));
-    console.log(form);
     try {
       const response = await fetch(`${API_URL}/add`, {
         method: "POST",
@@ -89,6 +88,7 @@ function App() {
         date: "",
         files: [],
       });
+      formData.files = [];
       fetchBills();
     } catch (error) {
       console.error("Error adding bill:", error);
