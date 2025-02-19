@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 
-const API_URL = "http://localhost:5000/api/bills";
+const API_URL = "https://w2nproject.onrender.com/api/bills";
 
 type Bill = {
   _id: string;
