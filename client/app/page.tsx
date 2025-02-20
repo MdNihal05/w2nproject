@@ -1,8 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 
-// const API_URL = "http://localhost:5000/api/bills";
-const API_URL = "https://w2nproject.onrender.com/api/bills";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 import type { Bill, FormData } from "@/types";
 
@@ -25,7 +24,7 @@ const Page = () => {
 
   const fetchBills = async () => {
     try {
-      const response = await fetch(API_URL);
+      const response = await fetch(`${API_URL}/bills`);
       if (!response.ok) throw new Error("Failed to fetch bills");
       const data = await response.json();
       setBills(data);
@@ -60,7 +59,7 @@ const Page = () => {
 
     formData.files.forEach((file) => form.append("files", file));
     try {
-      const response = await fetch(`${API_URL}/add`, {
+      const response = await fetch(`${API_URL}/bills/add`, {
         method: "POST",
         body: form,
       });
@@ -83,7 +82,7 @@ const Page = () => {
 
   const handleDelete = async (id: string) => {
     try {
-      const response = await fetch(`${API_URL}/${id}`, {
+      const response = await fetch(`${API_URL}/bills/${id}`, {
         method: "DELETE",
       });
       if (!response.ok) throw new Error("Failed to delete bill");
@@ -99,7 +98,7 @@ const Page = () => {
     setAnalysis(null);
 
     try {
-      const response = await fetch(`${API_URL}/describe`);
+      const response = await fetch(`${API_URL}/bills/describe`);
       if (!response.ok) throw new Error("Failed to get bill analysis");
       const data = await response.json();
       setAnalysis(data.message);
