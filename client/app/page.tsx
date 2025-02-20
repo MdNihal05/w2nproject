@@ -269,7 +269,11 @@ const Page = () => {
       </button>
 
       {loading && <p>Loading analysis...</p>}
-      {analysis && <pre className="bg-gray-200 p-3 rounded-md">{analysis}</pre>}
+      {analysis && (
+        <pre className="bg-gray-200 p-3 rounded-md text-wrap max-w-5xl">
+          {analysis}
+        </pre>
+      )}
     </div>
   );
 };

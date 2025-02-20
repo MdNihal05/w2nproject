@@ -52,7 +52,7 @@ const addBill = async (req, res) => {
 
 const getBills = async (req, res) => {
   try {
-    const bills = await Bill.find().sort({ createdAt: -1 });
+    const bills = await Bill.find().sort({ date: -1 });
     res.json(bills);
   } catch (error) {
     res.status(500).json({ error: error.message });
