@@ -9,7 +9,7 @@ const uploadToCloudinary = (fileBuffer, fileName) => {
       {
         folder: "bills",
         public_id: fileName,
-        resource_type: "auto",
+        resource_type: "auto"
       },
       (error, result) => {
         if (result) resolve(result);
@@ -24,16 +24,16 @@ const addBill = async (req, res) => {
   try {
     const { category, amount, note, name, date } = req.body;
     let fileUrls = [];
-    let filePublicIds = [];
 
     if (req.files && req.files.length > 0) {
       const uploadPromises = req.files.map((file) =>
         uploadToCloudinary(file.buffer, file.originalname)
       );
       const uploadResults = await Promise.all(uploadPromises);
-      fileUrls = uploadResults.map((result) => result.secure_url);
-      filePublicIds = uploadResults.map((result) => result.public_id);
-      console.log(uploadResults, filePublicIds)
+      fileUrls = uploadResults.map((result) => ({
+        url: result.secure_url,
+        name: result.display_name
+      }));
     }
 
     const bill = await Bill.create({
@@ -42,10 +42,8 @@ const addBill = async (req, res) => {
       note,
       date,
       name,
-      files: fileUrls,
-      filePublicIds,
+      files: fileUrls
     });
-    console.log(bill);
     res.status(201).json(bill);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -60,7 +58,6 @@ const getBills = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
 
 const deleteBill = async (req, res) => {
   try {
@@ -81,7 +78,6 @@ const deleteBill = async (req, res) => {
   }
 };
 
-
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 const describeBills = async (req, res) => {
@@ -95,7 +91,7 @@ const describeBills = async (req, res) => {
       category: bill.category,
       amount: bill.amount,
       date: bill.date,
-      name: bill.name,
+      name: bill.name
     }));
 
     const prompt = `

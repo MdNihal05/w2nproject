@@ -4,24 +4,7 @@ import React, { useState, useEffect } from "react";
 // const API_URL = "http://localhost:5000/api/bills";
 const API_URL = "https://w2nproject.onrender.com/api/bills";
 
-type Bill = {
-  _id: string;
-  category: string;
-  amount: number;
-  note: string;
-  date: string;
-  files: string[];
-  name: string;
-};
-
-type FormData = {
-  name: string;
-  category: string;
-  amount: string;
-  note: string;
-  date: string;
-  files: File[];
-};
+import type { Bill, FormData } from "@/types";
 
 const Page = () => {
   const [bills, setBills] = useState<Bill[]>([]);
@@ -247,7 +230,7 @@ const Page = () => {
           {bills.map((bill) => (
             <div
               key={bill._id}
-              className="bg-slate-300 min-w-64 p-3 rounded-sm shadow-md"
+              className="bg-slate-300 min-w-64 p-3 flex flex-col rounded-sm shadow-md"
             >
               <h3 className="bg-blue-300 p-1 font-bold rounded-sm text-center">
                 {bill.name}
@@ -256,6 +239,17 @@ const Page = () => {
               <p>Amount: {bill.amount}</p>
               <p>Note: {bill.note}</p>
               <p>Date: {new Date(bill.date).toLocaleDateString()}</p>
+              {bill.files.map((file, ind) => (
+                <a
+                  key={ind}
+                  href={file.url}
+                  target="_blank"
+                  className="text-blue-700"
+                >
+                  {file.name}
+                </a>
+              ))}
+
               <button
                 onClick={() => handleDelete(bill._id)}
                 className="bg-red-400 p-2 m-2 rounded-lg"
